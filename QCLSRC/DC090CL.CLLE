@@ -1,0 +1,107 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC090CL                                                      */
+/* Title......:  Rebuild IBM outfiles for cross-reference system              */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Rebuilds one or more IBM outfiles used by the cross-reference system.   */
+/*    Parameters control which outfiles are refreshed.                        */
+/*                                                                            */
+Pgm parm(&of1 &of2 &of3 &of4 &of5)
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+dcl &of1 type(*char) len(1)   /* Run DSPFD *MBRLIST for pgms? */
+dcl &of2 type(*char) len(1)   /* Run DSPPGMREF?               */
+dcl &of3 type(*char) len(1)   /* Run DSPDBR?                  */
+dcl &of4 type(*char) len(1)   /* Run DSPOBJD?                 */
+dcl &of5 type(*char) len(1)   /* Run DSPFD for PF's?          */
+dcl &sysname type(*char) len(10)
+
+dclf dcdatap
+
+rtvneta sysname(&sysname)
+
+/*  Reduce joblog volume  */
+chgjob log(1 20)
+
+/*  Clear outfiles for which a rebuild was requested  */
+if (&of1 = 'Y') then(clrpfm dspmbr)
+if (&of2 = 'Y') then(clrpfm dsppgmrf)
+if (&of3 = 'Y') then(clrpfm dspdbr)
+if (&of4 = 'Y') then(clrpfm dspobj)
+if (&of5 = 'Y') then(clrpfm dsppf)
+if (&of5 = 'Y') then(clrpfm rcdfmt)
+if (&of5 = 'Y') then(clrpfm accpth)
+
+/*  Read a data analysis request record  */
+loop:
+
+rcvf rcdfmt(dcdata)
+   monmsg msgid(cpf0864) exec(goto cmdlbl(xloop))
+
+/*  Execute commands for outfiles if the rebuild was requested  */
+/*    and if the data analysis record indicates this file or    */
+/*    library should contribute to the rebuild.                 */
+
+/*  List S36 procedures in source file  */
+if (&of1 = 'Y' *and &daof1 = 'Y') then(do)
+   dspfd file(&dalib/&dasrf) type(*mbrlist) +
+      output(*outfile) outfile(dspmbr) +
+      outmbr(*first *add)
+enddo
+
+/*  List objects used by programs (files, data areas, etc)  */
+if (&of2 = 'Y' *and &daof2 = 'Y') then(do)
+   dsppgmref pgm(&dalib/*all) output(*outfile) +
+      objtype(*all) outfile(dsppgmrf) +
+      outmbr(*first *add)
+enddo
+
+/*  List physical-logical file relationships  */
+if (&of3 = 'Y' *and &daof3 = 'Y') then(do)
+   dspdbr file(&dalib/*all) output(*outfile) +
+      outfile(dspdbr) outmbr(*first *add)
+enddo
+
+/*  List source information for programs  */
+if (&of4 = 'Y' *and &daof4 = 'Y') then(do)
+   dspobjd obj(&dalib/*all) objtype(*pgm *srvpgm +
+      *module) detail(*full) output(*outfile) +
+      outfile(dspobj) outmbr(*first *add)
+enddo
+
+/*  For data files, list PF info, record format names, and key info  */
+if (&of5 = 'Y' *and &daof5 = 'Y') then(do)
+   dspfd file(&dalib/*all) type(*atr) +
+      output(*outfile) fileatr(*pf) +
+      outfile(dsppf) outmbr(*first *add)
+   dspfd file(&dalib/*all) type(*rcdfmt) +
+      output(*outfile) outfile(rcdfmt) +
+      outmbr(*first *add)
+   dspfd file(&dalib/*all) type(*accpth) +
+      output(*outfile) outfile(accpth) +
+      outmbr(*first *add)
+enddo
+
+goto loop
+
+xloop:
+
+/*  Display module list to outfile  */
+dspfd comlib_sfo/procedures type(*mbrlist) output(*outfile) +
+   outfile(dspmod) outmbr(*first *replace)
+
+if (&sysname = 'SFOFFICE' *or &sysname = 'COMANCHE') then(do)
+   dspfd canlib/procedures type(*mbrlist) output(*outfile) +
+      outfile(dspmod) outmbr(*first *add)
+enddo
+
+/*  Get a complete list of production objects in ALLOBJ  */
+call dc095cl
+
+/*  Get a complete list of production source mbrs in ALLMBR  */
+call dc096cl
+
+endpgm
