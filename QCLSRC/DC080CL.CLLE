@@ -1,0 +1,26 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC080CL                                                      */
+/* Title......:  Refresh field prefix file                                    */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Runs DSPFFD into PGFILE/DSPFFD, then calls DC080 to determine          */
+/*    the field prefix associated with each file. Output is DCPRFXP.         */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+dcl &dtalib type(*char) len(10)
+
+rtvdtaara (prddtalib (1 10)) rtnvar(&dtalib)
+
+dspffd file(&dtalib/*all) output(*outfile) +
+   outfile(pgfile/dspffd)
+
+clrpfm dcprfxp
+ovrdbf dspffdl1 tofile(pgfile/dspffdl1)
+call dc080
+
+endpgm
