@@ -1,0 +1,27 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC120CL                                                      */
+/* Title......:  Update extended file name usage list                         */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Clears and rebuilds the extended file name cross-reference files        */
+/*    (DCEXTFP and DCEXCRP) from DSPPGMREF output.                           */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+/*  Reduce joblog volume  */
+chgjob log(1 20)
+
+clrpfm dcextfp
+
+/*  Write from DSPPGMRF into DCEXTFP  */
+call dc120
+
+/*  Create core name file keys for the extended file name file  */
+clrpfm dcexcrp
+call dc122
+
+endpgm
