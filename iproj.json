@@ -1,0 +1,10 @@
+{
+  "description": "DC Utils - IBM i documentation cross-reference utilities",
+  "version": "0.0.1",
+  "repository": "https://github.com/rogersonra/dcutils",
+  "objlib": "&OBJLIB",
+  "curlib": "&CURLIB",
+  "preUsrlibl": [],
+  "postUsrlibl": [],
+  "setIBMiEnvCmd": []
+}
