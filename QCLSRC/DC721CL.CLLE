@@ -1,0 +1,22 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC721CL                                                      */
+/* Title......:  Update program usage files                                   */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Updates the DSPOBJ work file clone and rebuilds the program             */
+/*    usage summary file DCUSAGP.                                             */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+/*  Update DSPOBJ work file clone  */
+call dc721
+
+/*  Replace the pgm usage summary file  */
+clrpfm dcusagp
+call dc722
+
+endpgm
