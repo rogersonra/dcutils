@@ -1,0 +1,63 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC111CL                                                      */
+/* Title......:  Create called-to-calling cross-reference files               */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Builds the called-to-calling program cross-reference using              */
+/*    DSPPGMREF output and S/36 procedure analysis.                           */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+dcl &srlnbr type(*char) len(8)    /* Machine serial # for system customization */
+dcl &system type(*char) len(10)
+
+rtvsysval qsrlnbr rtnvar(&srlnbr)
+rtvneta sysname(&system)
+
+/*  Reduce joblog volume  */
+chgjob log(1 20)
+
+/*  Read DSPPGMRF records and populate DCPGPGP  */
+clrpfm dcpgpgp
+ovrdbf dcpgpgp frcratio(1)
+call dc110
+dltovr dcpgpgp
+
+/*  Analyze source members from DSPMBR for STRS36PRC commands  */
+/*  Only runs on SFOFFICE, not CHEROKEE                         */
+if (&system = 'SFOFFICE') then(do)
+   call dc118cl parm('SL0900' 'QRPGLESRC' 'CANLIB' 'RPTD' '27' '10')
+enddo
+
+/*  Analyze RPG calls via QCMDEXC from compile-time tables and files  */
+/*  WARNING: OPNQRYF below — SQL equivalent is SELECT DISTINCT on     */
+/*  DPCLED = 'QCMDEXC' ORDER BY DPCLNG; candidate for future migration */
+ovrdbf dcpgpgp share(*yes)
+opnqryf dcpgpgp +
+   qryslt('DPCLED = "QCMDEXC   "') +
+   keyfld(dpclng) +
+   uniquekey(1)
+cpyfrmqryf fromopnid(dcpgpgp) tofile(dc112wp) +
+   mbropt(*replace)
+clof dcpgpgp
+dltovr dcpgpgp
+
+call dc112 parm(&srlnbr)
+
+/*  For Cherokee, add PKSBMJOB calls to the xref file  */
+if (&system = 'CHEROKEE') then(call dc056)
+
+/*  Look for bound calls in RPGLE pgms  */
+call dc130
+
+/*  Add night run calls from EODLIST  */
+call dc119
+
+/*  Resequence duplicate seq#'s in DCPGPGP for DC101 display  */
+call dc113
+
+endpgm
