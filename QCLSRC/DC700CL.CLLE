@@ -1,0 +1,49 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC700CL                                                      */
+/* Title......:  Weekly refresh of documentation x-ref files                 */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Driver program which orchestrates the weekly refresh of all             */
+/*    documentation cross-reference files.                                    */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+/*  Clear the field xref file  */
+clrpfm doclib/dcfxrfp
+   monmsg  cpf0000
+clrpfm pgfile/dcfxrfp
+   monmsg  cpf0000
+
+/*  Rebuild IBM outfiles  */
+call dc090cl parm('Y' 'Y' 'Y' 'Y' 'Y')
+
+/*  Update procedure/module xref file  */
+clrpfm dcprocp
+call dc250
+
+/*  Rebuild called-to-calling pgm xref file  */
+call dc111cl
+
+/*  Rebuild extended file name xref files  */
+call dc120cl
+
+/*  Rebuild file where-used xref file  */
+call dc145cl
+
+/*  Rebuild menu calls xref file  */
+call dc050cl
+
+/*  Update pgm descriptions in DCPGPGP if still missing  */
+call dc018
+
+/*  Update file/field list and field prefix file  */
+call dc080cl
+
+/*  Update the usage history file  */
+call dc721cl
+
+endpgm
