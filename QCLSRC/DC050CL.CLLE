@@ -1,0 +1,25 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC050CL                                                      */
+/* Title......:  Recreate menu x-ref file                                     */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Clears and rebuilds the menu cross-reference file by analyzing          */
+/*    normal menu source and MENUR-controlled menus.                          */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+clrpfm dcmenup
+
+/*  Analyze normal menu source  */
+call dc050
+
+/*  Analyze menus controlled by MENUR pgm  */
+call dc052
+
+/*  DC053 (FOMENU analysis) removed 1/16/2004 — FOMENU is now a normal DSPF menu  */
+
+endpgm
