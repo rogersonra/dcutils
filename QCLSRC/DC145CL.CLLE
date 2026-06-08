@@ -1,0 +1,29 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC145CL                                                      */
+/* Title......:  Create file where-used cross-reference file                  */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Builds the file where-used cross-reference from DSPDBR output          */
+/*    (produced by DC090CL) and CFI references.                               */
+/*                                                                            */
+Pgm
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+dcl &dtalib type(*char) len(10)
+
+rtvdtaara (prddtalib (1 10)) rtnvar(&dtalib)
+
+/*  Reduce joblog volume  */
+chgjob log(1 20)
+
+/*  Note: DSPDBR outfile population was moved to DC090CL;         */
+/*  the original DSPDBR calls here were bypassed and removed.     */
+
+clrpfm dcflwup
+call dc145   /*  Output from DSPDBR file  */
+call dc146   /*  Output special CFI references  */
+
+endpgm
