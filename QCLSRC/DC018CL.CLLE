@@ -1,0 +1,25 @@
+/* Programmer.:  Robert Rogerson                                              */
+/* Program....:  DC018CL                                                      */
+/* Title......:  Retrieve member description text and source type             */
+/* Date.......:  2026                                                         */
+/*                                                                            */
+/* Description:                                                               */
+/*                                                                            */
+/*    Retrieves source member description text and source type via            */
+/*    RTVMBRD; returns values through parameters to the caller.               */
+/*                                                                            */
+Pgm parm(&mllib &mlfile &mlname &mlmtxt &mlstyp)
+
+DclPrcOpt dftactgrp(*no) actgrp('DCAG')
+
+dcl &mllib  type(*char) len(10)   /* Source library     */
+dcl &mlfile type(*char) len(10)   /* Source file        */
+dcl &mlname type(*char) len(10)   /* Source member      */
+dcl &mlmtxt type(*char) len(50)   /* Member description */
+dcl &mlstyp type(*char) len(10)   /* Source type        */
+
+rtvmbrd file(&mllib/&mlfile) mbr(&mlname) text(&mlmtxt) +
+   srctype(&mlstyp)
+monmsg cpf0000   /* Member not found or other error — continue */
+
+endpgm
